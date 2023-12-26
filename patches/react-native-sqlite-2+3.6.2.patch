@@ -1,0 +1,64 @@
+diff --git a/node_modules/react-native-sqlite-2/ios/RNSqlite2.m b/node_modules/react-native-sqlite-2/ios/RNSqlite2.m
+index f1bf0c3..28c1ccf 100644
+--- a/node_modules/react-native-sqlite-2/ios/RNSqlite2.m
++++ b/node_modules/react-native-sqlite-2/ios/RNSqlite2.m
+@@ -300,15 +300,17 @@ +(NSString *)convertSQLiteErrorToString:(struct sqlite3 *)db {
+ }
+ 
+ +(NSString *)unescapeBlob:(NSString*)str {
+-  return [[[str stringByReplacingOccurrencesOfString:@"\x01\x01" withString:@"\x00"]
+-           stringByReplacingOccurrencesOfString:@"\x01\x02" withString:@"\x01"]
+-          stringByReplacingOccurrencesOfString:@"\x02\x02" withString:@"\x02"];
++  return str;
++  // return [[[str stringByReplacingOccurrencesOfString:@"\x01\x01" withString:@"\x00"]
++  //          stringByReplacingOccurrencesOfString:@"\x01\x02" withString:@"\x01"]
++  //         stringByReplacingOccurrencesOfString:@"\x02\x02" withString:@"\x02"];
+ }
+ 
+ +(NSString *)escapeBlob:(NSString*)str {
+-  return [[[str stringByReplacingOccurrencesOfString:@"\x02" withString:@"\x02\x02"]
+-           stringByReplacingOccurrencesOfString:@"\x01" withString:@"\x01\x02"]
+-          stringByReplacingOccurrencesOfString:@"\x00" withString:@"\x01\x01"];
++  return str;
++  // return [[[str stringByReplacingOccurrencesOfString:@"\x02" withString:@"\x02\x02"]
++  //          stringByReplacingOccurrencesOfString:@"\x01" withString:@"\x01\x02"]
++  //         stringByReplacingOccurrencesOfString:@"\x00" withString:@"\x01\x01"];
+ }
+ 
+ @end
+diff --git a/node_modules/react-native-sqlite-2/lib/commonjs/SQLiteDatabase.js b/node_modules/react-native-sqlite-2/lib/commonjs/SQLiteDatabase.js
+index d7bae2f..b16710e 100644
+--- a/node_modules/react-native-sqlite-2/lib/commonjs/SQLiteDatabase.js
++++ b/node_modules/react-native-sqlite-2/lib/commonjs/SQLiteDatabase.js
+@@ -61,6 +61,7 @@ function arrayifyQuery(query) {
+ 
+ 
+ function escapeMacIOSAndroid(args) {
++  return args;
+   if (os === 'android' || os === 'ios' || os === 'macos') {
+     return (0, _lodash.default)(args, escapeBlob);
+   } else {
+@@ -69,6 +70,7 @@ function escapeMacIOSAndroid(args) {
+ }
+ 
+ function escapeBlob(data) {
++  return data;
+   if (typeof data === 'string') {
+     return data.replace(/\u0002/g, '\u0002\u0002').replace(/\u0001/g, '\u0001\u0002').replace(/\u0000/g, '\u0001\u0001');
+   } else {
+@@ -77,6 +79,7 @@ function escapeBlob(data) {
+ }
+ 
+ function unescapeMacIOSAndroid(rows) {
++  return rows;
+   if (os === 'android' || os === 'ios' || os === 'macos') {
+     return (0, _lodash.default)(rows, function (row) {
+       return (0, _lodash.default)(row, unescapeBlob);
+@@ -87,6 +90,7 @@ function unescapeMacIOSAndroid(rows) {
+ }
+ 
+ function unescapeBlob(data) {
++  return data;
+   if (typeof data === 'string') {
+     return data.replace(/\u0001\u0001/g, '\u0000').replace(/\u0001\u0002/g, '\u0001').replace(/\u0002\u0002/g, '\u0002');
+   } else {
