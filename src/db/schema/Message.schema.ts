@@ -9,7 +9,7 @@ import {
 export const messageSchemaLiteral = {
   title: 'message schema',
   description: 'message schema',
-  version: 0,
+  version: 1,
   type: 'object',
   primaryKey: 'id',
   properties: {
