@@ -32,6 +32,9 @@ export const messageSchemaLiteral = {
     active: {
       type: 'boolean',
     },
+    delivered: {
+      type: 'boolean',
+    },
 
     createdAt: {
       type: 'string',

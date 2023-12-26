@@ -43,6 +43,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
         type: i % 2 === 0 ? 'text' : 'audio',
         status: 'success',
         active: true,
+        delivered: false,
 
         createdAt: ts,
         updatedAt: ts,
@@ -100,6 +101,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
               status
               type
               active
+              delivered
               createdAt
               updatedAt
             }
@@ -196,6 +198,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
           status
           type
           active
+          delivered
           createdAt
           updatedAt
         }

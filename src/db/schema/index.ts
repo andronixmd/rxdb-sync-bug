@@ -13,6 +13,11 @@ export const schemas = {
     schema: messageSchema,
     autoMigrate: false,
     localDocuments: true,
-    migrationStrategies: {},
+    migrationStrategies: {
+      1: (oldDoc: any) => {
+        oldDoc.delivered = false;
+        return oldDoc;
+      },
+    },
   },
 };
