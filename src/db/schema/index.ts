@@ -18,6 +18,7 @@ export const schemas = {
         oldDoc.delivered = false;
         return oldDoc;
       },
+      2: (oldDoc: any) => oldDoc,
     },
   },
 };
