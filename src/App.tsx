@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 
 import { Database } from './db/schema';
 import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 
 const styles = StyleSheet.create({
   container: {
@@ -56,8 +57,171 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
       setMessagesCount(messages.length);
     });
 
+    const replication = db.messages.syncGraphQL({
+      url: 'http://localhost:8123/v1/graphql',
+
+      pull: {
+        queryBuilder: (doc: any) => {
+          if (!doc) {
+            doc = {
+              id: '',
+              updatedAt: new Date(0).toISOString(),
+            };
+          }
+
+          const query = `{
+            messages(
+              where: {
+                _and: [
+                  {
+                    _or: [
+                      {
+                        updatedAt: {
+                          _gt: "${doc.updatedAt}"
+                        }
+                      },
+                      ${
+                        doc.id
+                          ? `{
+                          updatedAt: {_eq: "${doc.updatedAt}"},
+                          id: {_gt: "${doc.id}"}
+                        }`
+                          : ''
+                      }
+                    ]
+                  }
+                ]
+              },
+              order_by: {updatedAt: asc},
+              limit: 20
+            ) {
+              id
+              content
+              status
+              type
+              active
+              createdAt
+              updatedAt
+            }
+          }`;
+
+          return {
+            query,
+            variables: {},
+          };
+        },
+        batchSize: 20,
+      },
+      push: {
+        queryBuilder: (docs: any[]) => {
+          const query = `
+            mutation InsertMessages($messages: [messages_insert_input!]!) {
+              insert_messages(
+                objects: $messages,
+                on_conflict: {
+                  constraint: messages_pkey,
+                  update_columns: [content, status, active]
+                }){
+                returning {
+                  id
+                  content
+                  status
+                  type
+                  active
+                  createdAt
+                  updatedAt
+                }
+              }
+            }
+        `;
+
+          const messages = docs
+            .filter((doc) => !doc.deleted)
+            .map((doc) => {
+              const message: any = {
+                id: doc.id,
+
+                content: doc.content,
+
+                status: doc.status,
+                type: doc.type,
+
+                active: !!doc.active,
+              };
+
+              return message;
+            });
+
+          const variables = {
+            messages,
+          };
+
+          return {
+            query,
+            variables,
+          };
+        },
+        batchSize: 20,
+      },
+      live: true,
+      liveInterval: 0,
+      deletedFlag: 'deleted',
+    });
+
+    replication.error$.subscribe((err) => {
+      console.error('replication error', JSON.stringify(err, null, 2));
+    });
+
+    const wsClient = new SubscriptionClient('ws://localhost:8123/v1/graphql', {
+      reconnect: true,
+      timeout: 1000 * 60,
+      connectionCallback: (error) => {
+        console.log('setupSubscription() | connection', {
+          error,
+        });
+      },
+      reconnectionAttempts: 10000,
+      inactivityTimeout: 0,
+      lazy: true,
+    });
+
+    const ret = wsClient.request({
+      query: `subscription onMessageChanged {
+        messages(
+          order_by: {updatedAt: desc},
+          limit: 1,
+        ) {
+          id
+          content
+          status
+          type
+          active
+          createdAt
+          updatedAt
+        }
+      }`,
+    });
+
+    ret.subscribe({
+      next() {
+        console.log('setupSubscription() | subscription emitted => trigger run');
+        replication.run(true);
+      },
+      error: (error) => {
+        console.error('setupSubscription() | failed', {
+          error,
+        });
+      },
+    });
+
     return () => {
       subscription.unsubscribe();
+      replication.cancel();
+
+      wsClient.unsubscribeAll();
+      // @ts-ignore
+      wsClient.reconnect = false;
+      wsClient.close(true, true);
     };
   }, [db]);
 
