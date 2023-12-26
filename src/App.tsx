@@ -55,6 +55,8 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
   }, [db, inProgress]);
 
   useEffect(() => {
+    if (!db || !db.messages) return;
+
     const subscription = db.messages.find().$.subscribe((messages) => {
       setMessagesCount(messages.length);
       setDeliveredCount(messages.filter((m) => !!m.delivered).length);
