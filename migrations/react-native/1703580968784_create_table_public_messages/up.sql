@@ -1,0 +1,1 @@
+CREATE TABLE "public"."messages" ("id" text NOT NULL, "content" text, "status" text NOT NULL, "type" text NOT NULL, "active" boolean NOT NULL DEFAULT true, "createdAt" timestamptz NOT NULL DEFAULT clock_timestamp(), "updatedAt" timestamptz NOT NULL DEFAULT clock_timestamp(), PRIMARY KEY ("id") );
