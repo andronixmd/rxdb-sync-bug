@@ -29,7 +29,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
     if (inProgress) return;
 
     setInProgress(true);
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       const date = new Date();
 
       date.setTime(date.getTime() + i * 1000);
