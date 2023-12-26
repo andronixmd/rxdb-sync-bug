@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
 const App = ({ initialDb: db }: { initialDb: Database }) => {
   const [inProgress, setInProgress] = React.useState(false);
   const [messagesCount, setMessagesCount] = React.useState(0);
+  const [deliveredCount, setDeliveredCount] = React.useState(0);
 
   const createRecords = useCallback(async () => {
     if (inProgress) return;
@@ -56,6 +57,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
   useEffect(() => {
     const subscription = db.messages.find().$.subscribe((messages) => {
       setMessagesCount(messages.length);
+      setDeliveredCount(messages.filter((m) => !!m.delivered).length);
     });
 
     const replication = db.messages.syncGraphQL({
@@ -232,6 +234,7 @@ const App = ({ initialDb: db }: { initialDb: Database }) => {
     <View style={styles.container}>
       <Text style={styles.text}>Hello World!</Text>
       <Text style={styles.text2}>Messages: {messagesCount}</Text>
+      <Text style={styles.text2}>Delivered messages: {deliveredCount}</Text>
       <Button onPress={createRecords} title="Create Records" disabled={inProgress} />
     </View>
   );
